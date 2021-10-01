@@ -1,14 +1,19 @@
 <template>
   <div>
-    <party-list class="party" v-if="show" v-bind:users="users"></party-list>
+    <party-list class="party" v-if="show" v-bind:users="users" @logout="logout = true"></party-list>
     <div class="container">
-      <web-socket v-if="show" @error="show = false" @users="users = $event"></web-socket>
+      <web-socket
+        v-if="show"
+        @error="show = false"
+        @users="users = $event"
+        @close="logout = false"
+        v-bind:logout="logout">
+      </web-socket>
       <span v-else>
         <input type="text" v-model="me" v-bind:placeholder="error" v-on:keyup.enter="login()">
         <button @click="login()">Join Party</button>
       </span>
     </div>
-
   </div>
 </template>
 
@@ -71,7 +76,7 @@ export default {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  color: green;
+  // color: green;
   // border: 3px solid green;
   text-align: center;
   cursor: pointer;

@@ -44,6 +44,14 @@ app.post('/login', function (req, res) {
   console.log(`creating new userId: ${id}`);
   req.session.userId = id;
   res.status(201).send({});
+  if (calculatePercentage(state) === '0.00') {
+    state.current = state.TOTAL;
+  }
+});
+
+app.delete('/logout', function (req, res) {
+  req.session.destroy();
+  res.status(200).send({});
 });
 
 const server = http.createServer(app);
@@ -75,9 +83,7 @@ wss.on('connection', function (ws, request) {
   console.log();
 
   const interval = setInterval(function() {
-    const total = state.TOTAL;
-    const current = state.current;
-    const percentage = ((current / total) * 100).toFixed(2);
+    const percentage = calculatePercentage(state);
     const users = clients(wss);
     ws.send(JSON.stringify({percentage, users}));
   }, 300);
@@ -118,4 +124,14 @@ function has(wss, user) {
 function clients(wss) {
   const clients = new Set([...wss.clients].map(x => x.userId));
   return [...clients];
+}
+
+function calculatePercentage(state) {
+  const total = state.TOTAL;
+  const current = state.current;
+  let percentage = ((current / total) * 100);
+  if (percentage < 0) {
+    percentage = 0;
+  }
+  return percentage.toFixed(2);
 }

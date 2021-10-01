@@ -2,19 +2,31 @@
   <div @click="send()">
     <p><b>{{percentage}} %</b></p>
     <svg v-if="true" width="200" height="200">
-      <circle cx="100" cy="100" r="100" fill="grey" />
-      <circle cx="100" cy="100" v-bind:r="percentage" fill="orange" />
+      <circle cx="100" cy="100" r="100" v-bind:fill="bgColor" />
+      <path v-if="x1" v-bind:d="fill" fill="orange" />
     </svg>
   </div>
 </template>
 
 <script>
+import svgIntersections from 'svg-intersections';
+const intersect = svgIntersections.intersect;
+const shape = svgIntersections.shape;
+
 export default {
   name: 'WebSocket',
+  props: {
+    logout: Boolean,
+  },
   data() {
     return {
-      percentage: '100',
+      percentage: '0',
       ws: null,
+      x1: '',
+      y1: '',
+      x2: '',
+      y2: '',
+      flip: 1,
     };
   },
   async created() {
@@ -61,8 +73,50 @@ export default {
       }
     },
   },
+  watch: {
+    percentage(val) {
+      if (Number(val) <= 0) {
+        this.x1 = '';
+        return;
+      } 
+      const y = (100 - Number(val)) * 2;
+      this.flip = y <= 100 ? 1 : 0;
+
+      const intersections = intersect(
+        shape("circle", { cx: 100, cy: 100, r: 100 }),
+        shape("line", { x1: 0, y1: y, x2: 200, y2: y })
+      );
+
+      if (intersections.points.length > 1) {
+        this.x1 = intersections.points[0].x.toFixed(3);
+        this.y1 = intersections.points[0].y.toFixed(3);
+        this.x2 = intersections.points[1].x.toFixed(3);
+        this.y2 = intersections.points[1].y.toFixed(3);
+      }
+    },
+    logout(val) {
+      if (val && this.ws) {
+        this.ws.close();
+        this.$emit('close');
+      }
+    }
+  },
+  computed: {
+    fill() {
+      return `M${this.x1} ${this.y1}, A100 100, 0 ${this.flip} 0, ${this.x2} ${this.y2}`;
+    },
+    bgColor() {
+      const val = Number(this.percentage);
+      if (val === 100) return 'orange';
+      if (val === 0) return 'grey';
+      else return 'lightgrey';
+    }
+  },
 };
 </script>
 
 <style lang="scss" scoped>
+  p {
+    color: red;
+  }
 </style>
