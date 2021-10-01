@@ -8,10 +8,13 @@
     "ws": "^8.2.2"
   },
   "devDependencies": {
-    "parcel-bundler": "^1.12.5"
+    "@vue/component-compiler-utils": "^3.2.2",
+    "parcel-bundler": "^1.12.5",
+    "sass": "^1.42.1",
+    "vue-template-compiler": "^2.6.14"
   },
   "scripts": {
-    "build": "rm -rf dist/ && parcel build frontend/index.html --no-minify",
+    "build": "rm -rf dist/ .cache/ && parcel build frontend/index.html --no-minify",
     "ui": "parcel frontend/index.html",
     "http": "node server/http.js",
     "unix": "dos2unix.exe * server/* frontend/*"
